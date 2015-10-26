@@ -11,26 +11,41 @@ module BinHeap where
  из кучи и выдает пару из удаленного значения и модифицированной кучи.
 -}
 
+import Data.List
+
 data BinHeap e = BinHeap [e] deriving (Show)
 
 extract :: Ord e => BinHeap e -> (e, BinHeap e)
+extract (BinHeap [e]) = (e, BinHeap [])
 extract (BinHeap e) = (head e, heapify (BinHeap ([last e] ++ (tail $ init e))) 0)
 
 {-
  Функция принимает 2 параметра - кучу и текущую позицию в ней,
  и придаёт бинарной куче её свойства
  Спускаемся начиная с корня и если
-   - левый  ребёнок меньше текущего, то меняем их местами, и продолжаем спускатся
-   - аналогично с правым ребёнком
+   - левый  ребёнок < элемента в текущей вершине и < правого, то меняем их местами, и продолжаем спускатся
+   - правый ребёнок < элемента в текущей вершине, то меняем их местами, и продолжаем спускатся
    - иначе возвращаем текущую кучу
+
+ Если левого или правого ребёнка не существует, то можно им временно выдать значение в текущей вершине
+ Это ничего не изменит, т.к. используется строгое сравнение
 -}
 heapify :: Ord e => BinHeap e -> Int -> BinHeap e
 heapify (BinHeap e) pos
-    | length e > left  && e !! pos > e !! left  = heapify (swapAt (BinHeap e) pos left)  left
-    | length e > right && e !! pos > e !! right = heapify (swapAt (BinHeap e) pos right) right
+    | leastChild /= pos = heapify (swapAt (BinHeap e) pos leastChild) leastChild
     | otherwise = BinHeap e
       where left  = pos * 2 + 1
             right = pos * 2 + 2
+
+            posValue = e !! pos
+            leftValue =  if length e > left  then e !! left  else e !! pos
+            rightValue = if length e > right then e !! right else e !! pos
+            leastChild =
+                if posValue > leftValue && leftValue < rightValue
+                    then left
+                else if posValue > rightValue
+                    then right
+                else pos
 
 {-
  Функция принимает 3 параметра: кучу и два её элемента, которые нужно поменять местами
@@ -44,3 +59,8 @@ swapAt (BinHeap e) i j = BinHeap (leftPart ++ [elemJ] ++ middlePart ++ [elemI] +
           middlePart = take (j - i - 1) (drop (i + 1) e)
           rightPart = drop (j + 1) e
 
+-- testing
+main = do
+    print $ unfoldr (\t -> case t of
+                    BinHeap [] -> Nothing
+                    BinHeap list -> Just (extract t)) (BinHeap [1..10])
