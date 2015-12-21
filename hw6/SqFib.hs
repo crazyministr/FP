@@ -13,7 +13,7 @@ import Data.List
 sqFib :: [Integer]
 sqFib = nub $ merge [x * x - 1 | x <- [2..]] [x | x <- fibs]
 
--- генерация числе Фибоначчи
+-- генерация чисел Фибоначчи
 fibs :: [Integer]
 fibs = 1 : 1 : zipWith (+) fibs (tail fibs)
 
@@ -23,4 +23,3 @@ merge [] x = x
 merge (x:xs) (y:ys) = if x < y
                          then x:(merge xs (y:ys))
                          else y:(merge (x:xs) ys)
-
